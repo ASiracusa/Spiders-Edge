@@ -14,6 +14,15 @@ public class Player : MonoBehaviour
     private float heightOverGround;
     private int jumpCounter;
 
+    [SerializeField]
+    public GameObject rightLeg;
+    [SerializeField]
+    public GameObject leftLeg;
+    [SerializeField]
+    public GameObject rightArm;
+    [SerializeField]
+    public GameObject leftArm;
+
 
 
 
@@ -22,6 +31,7 @@ public class Player : MonoBehaviour
     {
         mouseSensitivity= 1;
         body = GetComponent<Rigidbody>();
+        
 
         
     }
@@ -52,6 +62,13 @@ public class Player : MonoBehaviour
                 vecForceToAdd = cam.transform.forward;
                 vecForceToAdd.y *= 0;
                 vecForceToAdd = vecForceToAdd.normalized;
+
+                rightLeg.transform.Rotate(new Vector3(1,0,0));
+                leftLeg.transform.Rotate(new Vector3(1, 0, 0));
+                rightArm.transform.Rotate(new Vector3(1, 0, 0));
+                leftArm.transform.Rotate(new Vector3(1, 0, 0));
+
+
             }
             if (Input.GetKey("d"))
             {
