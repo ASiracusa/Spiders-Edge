@@ -24,8 +24,6 @@ public class Player : MonoBehaviour
     // Update is called once per frame
     void Update()
     {
-        transform.Rotate(new Vector3(0, Input.GetAxis("Mouse X") * mouseSensitivity, 0));
-        cam.transform.Rotate(new Vector3(-Input.GetAxis("Mouse Y"),0,0));
 
         numDirections = 0;
         vecForceToAdd *= 0;
@@ -73,7 +71,17 @@ public class Player : MonoBehaviour
             }
         }
 
+		// CAMERA CONTROLS
+		transform.Rotate(new Vector3(0, Input.GetAxis("Mouse X") * mouseSensitivity, 0));
 
+		if (cam.transform.eulerAngles.x > 80f && cam.transform.eulerAngles.x < 180f) {
+			cam.transform.localEulerAngles = new Vector3 (80f, 0f, 0f);
+		}
+		if (cam.transform.eulerAngles.x < 280f && cam.transform.eulerAngles.x > 180f) {
+			cam.transform.localEulerAngles = new Vector3 (280f, 0f, 0f);
+		}
+
+		cam.transform.Rotate(new Vector3(-Input.GetAxis("Mouse Y"),0,0));
 
     }
 }
