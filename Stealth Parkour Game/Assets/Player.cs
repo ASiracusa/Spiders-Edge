@@ -13,17 +13,22 @@ public class Player : MonoBehaviour
     private bool isGrounded;
     private float heightOverGround;
     private int jumpCounter;
+    private int ArmsBackForth;
+    private Vector3 grappleReturnTo;
+    
 
     [SerializeField]
-    public GameObject rightLeg;
+    private GameObject rightLeg;
     [SerializeField]
-    public GameObject leftLeg;
+    private GameObject leftLeg;
     [SerializeField]
-    public GameObject rightArm;
+    private GameObject rightArm;
     [SerializeField]
-    public GameObject leftArm;
+    private GameObject leftArm;
+    [SerializeField]
+    private GameObject grappler;
 
-
+    
 
 
     // Start is called before the first frame update
@@ -31,45 +36,49 @@ public class Player : MonoBehaviour
     {
         mouseSensitivity= 1;
         body = GetComponent<Rigidbody>();
+        ArmsBackForth = -1;
         
-
-        
+       
     }
 
     // Update is called once per frame
     void Update()
     {
+        //looking around
         transform.Rotate(new Vector3(0, Input.GetAxis("Mouse X") * mouseSensitivity, 0));
         cam.transform.Rotate(new Vector3(-Input.GetAxis("Mouse Y"),0,0));
 
 
+        //WASD and jumping movement
         vecForceToAdd *= 0;
+
+        if (jumpCounter < 30)
+            jumpCounter++;
 
         if (isGrounded)
         {
-
-            if (jumpCounter <30)
-            jumpCounter++;
-
+            
             if (Input.GetKey("space") && jumpCounter >= 30)
             {
-                body.AddForce(new Vector3(0, 1000, 0));
+                body.AddForce(new Vector3(0, 500, 0));
                 jumpCounter = 0;
             }
+
             if (Input.GetKey("w"))
             {
-
                 vecForceToAdd = cam.transform.forward;
                 vecForceToAdd.y *= 0;
                 vecForceToAdd = vecForceToAdd.normalized;
-
-                rightLeg.transform.Rotate(new Vector3(1,0,0));
-                leftLeg.transform.Rotate(new Vector3(1, 0, 0));
-                rightArm.transform.Rotate(new Vector3(1, 0, 0));
-                leftArm.transform.Rotate(new Vector3(1, 0, 0));
-
-
+             
+                if (Mathf.Sqrt(rightLeg.transform.rotation.x * rightLeg.transform.rotation.x + rightLeg.transform.rotation.z * rightLeg.transform.rotation.z) > .3)
+                    ArmsBackForth *= -1;
+               
+                rightLeg.transform.Rotate(new Vector3(3 * ArmsBackForth,0,0));
+                leftLeg.transform.Rotate(new Vector3(-3 * ArmsBackForth, 0, 0));
+                rightArm.transform.Rotate(new Vector3(-3 * ArmsBackForth, 0, 0));
+                leftArm.transform.Rotate(new Vector3(3 * ArmsBackForth, 0, 0));
             }
+
             if (Input.GetKey("d"))
             {
 
@@ -96,7 +105,7 @@ public class Player : MonoBehaviour
             }
             if (!(Input.GetKey("a") || Input.GetKey("w") || Input.GetKey("s") || Input.GetKey("d")))
             {
-                body.velocity.Set(body.velocity.x / 10, body.velocity.y, body.velocity.z / 10);
+                body.velocity.Set(body.velocity.x / 200, body.velocity.y, body.velocity.z / 200);
             }
             else
             {
@@ -106,6 +115,26 @@ public class Player : MonoBehaviour
                     body.AddForce((vecForceToAdd * 30));
                 }
             }
+
+            if (Input.GetKey("e"))
+            {
+           
+            
+                grappler.transform.rotation = cam.transform.rotation;
+                RaycastHit hit;
+                if (Physics.Raycast(grappler.transform.position, grappler.transform.forward, out hit, 100))
+                {
+                    grappler.transform.position = hit.transform.position;
+          
+                }
+
+            }
+            if (!Input.GetKey("e"))
+            {              
+                
+                grappler.transform.position = body.transform.position;
+            }
+
         }
 
 
@@ -118,6 +147,8 @@ public class Player : MonoBehaviour
     {
         if (collision.gameObject.layer == 8) {
             isGrounded = true;
+            
+
         }
     }
 
