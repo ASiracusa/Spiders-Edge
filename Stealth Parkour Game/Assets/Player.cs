@@ -15,7 +15,7 @@ public class Player : MonoBehaviour
     private int jumpCounter;
     private int ArmsBackForth;
     private Vector3 grappleReturnTo;
-    
+
 
     [SerializeField]
     private GameObject rightLeg;
@@ -28,7 +28,7 @@ public class Player : MonoBehaviour
     [SerializeField]
     private GameObject grappler;
 
-    
+
 
 
     // Start is called before the first frame update
@@ -37,8 +37,8 @@ public class Player : MonoBehaviour
         mouseSensitivity= 1;
         body = GetComponent<Rigidbody>();
         ArmsBackForth = -1;
-        
-       
+
+
     }
 
     // Update is called once per frame
@@ -57,7 +57,7 @@ public class Player : MonoBehaviour
 
         if (isGrounded)
         {
-            
+
             if (Input.GetKey("space") && jumpCounter >= 30)
             {
                 body.AddForce(new Vector3(0, 500, 0));
@@ -69,10 +69,10 @@ public class Player : MonoBehaviour
                 vecForceToAdd = cam.transform.forward;
                 vecForceToAdd.y *= 0;
                 vecForceToAdd = vecForceToAdd.normalized;
-             
+
                 if (Mathf.Sqrt(rightLeg.transform.rotation.x * rightLeg.transform.rotation.x + rightLeg.transform.rotation.z * rightLeg.transform.rotation.z) > .3)
                     ArmsBackForth *= -1;
-               
+
                 rightLeg.transform.Rotate(new Vector3(3 * ArmsBackForth,0,0));
                 leftLeg.transform.Rotate(new Vector3(-3 * ArmsBackForth, 0, 0));
                 rightArm.transform.Rotate(new Vector3(-3 * ArmsBackForth, 0, 0));
@@ -118,26 +118,36 @@ public class Player : MonoBehaviour
 
             if (Input.GetKey("e"))
             {
-           
-            
+
+
                 grappler.transform.rotation = cam.transform.rotation;
                 RaycastHit hit;
                 if (Physics.Raycast(grappler.transform.position, grappler.transform.forward, out hit, 100))
                 {
                     grappler.transform.position = hit.transform.position;
-          
+
                 }
 
             }
             if (!Input.GetKey("e"))
-            {              
-                
+            {
+
                 grappler.transform.position = body.transform.position;
             }
 
         }
 
+		// CAMERA CONTROLS
+		transform.Rotate(new Vector3(0, Input.GetAxis("Mouse X") * mouseSensitivity, 0));
 
+		if (cam.transform.eulerAngles.x > 80f && cam.transform.eulerAngles.x < 180f) {
+			cam.transform.localEulerAngles = new Vector3 (80f, 0f, 0f);
+		}
+		if (cam.transform.eulerAngles.x < 280f && cam.transform.eulerAngles.x > 180f) {
+			cam.transform.localEulerAngles = new Vector3 (280f, 0f, 0f);
+		}
+
+		cam.transform.Rotate(new Vector3(-Input.GetAxis("Mouse Y"),0,0));
 
     }
 
@@ -147,7 +157,7 @@ public class Player : MonoBehaviour
     {
         if (collision.gameObject.layer == 8) {
             isGrounded = true;
-            
+
 
         }
     }
