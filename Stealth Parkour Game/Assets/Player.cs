@@ -14,7 +14,7 @@ public class Player : MonoBehaviour
     private float heightOverGround;
     private int jumpCounter;
     private int ArmsBackForth;
-    private Vector3 grappleReturnTo;
+    
 
 
     [SerializeField]
@@ -26,7 +26,8 @@ public class Player : MonoBehaviour
     [SerializeField]
     private GameObject leftArm;
     [SerializeField]
-    private GameObject grappler;
+    private bool hasUnGrappled;
+    private HingeJoint hinge;
 
 
 
@@ -36,7 +37,8 @@ public class Player : MonoBehaviour
     {
         mouseSensitivity= 1;
         body = GetComponent<Rigidbody>();
-        ArmsBackForth = -1;
+        ArmsBackForth = -1;      
+        hinge = Instantiate<HingeJoint>(null);
 
 
     }
@@ -44,9 +46,6 @@ public class Player : MonoBehaviour
     // Update is called once per frame
     void Update()
     {
-        //looking around
-        transform.Rotate(new Vector3(0, Input.GetAxis("Mouse X") * mouseSensitivity, 0));
-        cam.transform.Rotate(new Vector3(-Input.GetAxis("Mouse Y"),0,0));
 
 
         //WASD and jumping movement
@@ -116,23 +115,26 @@ public class Player : MonoBehaviour
                 }
             }
 
+
+            //grappling with reality
+            Debug.Log(body.transform.parent);
             if (Input.GetKey("e"))
             {
-
-
-                grappler.transform.rotation = cam.transform.rotation;
+                
                 RaycastHit hit;
-                if (Physics.Raycast(grappler.transform.position, grappler.transform.forward, out hit, 100))
+                if (Physics.Raycast(body.transform.position, cam.transform.forward, out hit, 100) && hasUnGrappled)
                 {
-                    grappler.transform.position = hit.transform.position;
-
+                    
+                  
+                    hasUnGrappled = false;
                 }
 
             }
             if (!Input.GetKey("e"))
             {
-
-                grappler.transform.position = body.transform.position;
+                                           
+                hasUnGrappled = true;
+              
             }
 
         }
@@ -157,8 +159,6 @@ public class Player : MonoBehaviour
     {
         if (collision.gameObject.layer == 8) {
             isGrounded = true;
-
-
         }
     }
 
