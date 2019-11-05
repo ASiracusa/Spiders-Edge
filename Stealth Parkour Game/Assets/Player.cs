@@ -14,7 +14,17 @@ public class Player : MonoBehaviour
     private float heightOverGround;
     private int jumpCounter;
     private int ArmsBackForth;
-    
+    private float currentVelocity;
+    private RaycastHit hit;
+    private Vector3 currentDirection;
+
+
+    //variables for swinging
+    private float height;
+    private float distanceFromRotationPoint;
+    private float amountToRotate;
+
+
 
 
     [SerializeField]
@@ -26,9 +36,9 @@ public class Player : MonoBehaviour
     [SerializeField]
     private GameObject leftArm;
     [SerializeField]
-    private bool hasUnGrappled;
-    private HingeJoint hinge;
-
+    private bool hasUnGrappled;   
+    [SerializeField]
+    Canvas grappledText;
 
 
 
@@ -37,8 +47,11 @@ public class Player : MonoBehaviour
     {
         mouseSensitivity= 1;
         body = GetComponent<Rigidbody>();
-        ArmsBackForth = -1;      
-        hinge = Instantiate<HingeJoint>(null);
+        ArmsBackForth = -1;
+        hasUnGrappled = true;
+        
+     
+        
 
 
     }
@@ -47,7 +60,7 @@ public class Player : MonoBehaviour
     void Update()
     {
 
-
+    
         //WASD and jumping movement
         vecForceToAdd *= 0;
 
@@ -72,7 +85,7 @@ public class Player : MonoBehaviour
                 if (Mathf.Sqrt(rightLeg.transform.rotation.x * rightLeg.transform.rotation.x + rightLeg.transform.rotation.z * rightLeg.transform.rotation.z) > .3)
                     ArmsBackForth *= -1;
 
-                rightLeg.transform.Rotate(new Vector3(3 * ArmsBackForth,0,0));
+                rightLeg.transform.Rotate(new Vector3(3 * ArmsBackForth, 0, 0));
                 leftLeg.transform.Rotate(new Vector3(-3 * ArmsBackForth, 0, 0));
                 rightArm.transform.Rotate(new Vector3(-3 * ArmsBackForth, 0, 0));
                 leftArm.transform.Rotate(new Vector3(3 * ArmsBackForth, 0, 0));
@@ -117,27 +130,54 @@ public class Player : MonoBehaviour
 
 
             //grappling with reality
-            Debug.Log(body.transform.parent);
-            if (Input.GetKey("e"))
+
+        }
+            if (Input.GetMouseButtonDown(4))
             {
                 
-                RaycastHit hit;
+               
                 if (Physics.Raycast(body.transform.position, cam.transform.forward, out hit, 100) && hasUnGrappled)
                 {
                     
-                  
-                    hasUnGrappled = false;
+                    currentVelocity = body.velocity.magnitude;
+                    currentDirection = body.velocity;
+                    distanceFromRotationPoint = (hit.point - body.transform.position).magnitude;
+                Debug.Log(distanceFromRotationPoint);
+                                 
+                    hasUnGrappled = false;                                       
+                    grappledText.enabled = true;
+
+                    
+
                 }
 
             }
-            if (!Input.GetKey("e"))
+
+        
+        
+
+            if (!hasUnGrappled)
             {
-                                           
-                hasUnGrappled = true;
-              
+
+            Debug.Log("we're trying our best to rotate");
+            if((hit.point - body.transform.position).magnitude > distanceFromRotationPoint)
+            {
+                body.AddForce( distanceFromRotationPoint  * (hit.point - body.position).normalized);
             }
 
-        }
+         
+            }
+
+            if (Input.GetMouseButtonUp(4))
+            {
+
+               hasUnGrappled = true;
+                body.isKinematic = false;
+                body.collisionDetectionMode = CollisionDetectionMode.ContinuousDynamic;
+
+            }
+
+        
 
 		// CAMERA CONTROLS
 		transform.Rotate(new Vector3(0, Input.GetAxis("Mouse X") * mouseSensitivity, 0));
