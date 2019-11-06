@@ -24,9 +24,6 @@ public class Player : MonoBehaviour
     private float distanceFromRotationPoint;
     private float amountToRotate;
 
-
-
-
     [SerializeField]
     private GameObject rightLeg;
     [SerializeField]
@@ -49,16 +46,18 @@ public class Player : MonoBehaviour
         body = GetComponent<Rigidbody>();
         ArmsBackForth = -1;
         hasUnGrappled = true;
-        
-     
-        
-
-
+        grappledText.enabled = false;
     }
+
+
+
 
     // Update is called once per frame
     void Update()
     {
+
+
+
 
     
         //WASD and jumping movement
@@ -124,18 +123,18 @@ public class Player : MonoBehaviour
                 if (body.velocity.magnitude < 30)
                 {
                     vecForceToAdd = vecForceToAdd.normalized;
-                    body.AddForce((vecForceToAdd * 30));
+                    body.AddForce((vecForceToAdd * 20));
                 }
-            }
-
-
-            //grappling with reality
-
+            }            
         }
+
+
+
+
+
+        //this initiates a grapple
             if (Input.GetMouseButtonDown(4))
-            {
-                
-               
+            {                               
                 if (Physics.Raycast(body.transform.position, cam.transform.forward, out hit, 100) && hasUnGrappled)
                 {
                     
@@ -145,35 +144,34 @@ public class Player : MonoBehaviour
                 Debug.Log(distanceFromRotationPoint);
                                  
                     hasUnGrappled = false;                                       
-                    grappledText.enabled = true;
-
-                    
-
+                    grappledText.enabled = true;                    
                 }
-
             }
 
         
         
 
+            //this is what happens while we're grappled
             if (!hasUnGrappled)
             {
-
-            Debug.Log("we're trying our best to rotate");
-            if((hit.point - body.transform.position).magnitude > distanceFromRotationPoint)
-            {
-                body.AddForce( distanceFromRotationPoint  * (hit.point - body.position).normalized);
-            }
+     
+                if((hit.point - body.transform.position).magnitude > distanceFromRotationPoint)
+                {
+                    body.AddForce(1.3f *  body.velocity.magnitude  * (hit.point - body.position).normalized);
+                }
 
          
             }
 
+
+            //ends the grapple
             if (Input.GetMouseButtonUp(4))
             {
 
                hasUnGrappled = true;
                 body.isKinematic = false;
                 body.collisionDetectionMode = CollisionDetectionMode.ContinuousDynamic;
+                grappledText.enabled = false;
 
             }
 
@@ -198,7 +196,7 @@ public class Player : MonoBehaviour
     public void OnCollisionEnter(Collision collision)
     {
         if (collision.gameObject.layer == 8) {
-            isGrounded = true;
+            isGrounded = true;     
         }
     }
 
@@ -206,7 +204,9 @@ public class Player : MonoBehaviour
     {
         if (collision.gameObject.layer == 8)
         {
+
             isGrounded = false;
+
         }
     }
 
