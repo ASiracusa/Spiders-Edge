@@ -24,6 +24,8 @@ public class Player : MonoBehaviour
     private float distanceFromRotationPoint;
     private float amountToRotate;
 
+    private int grappleLayer;
+
     [SerializeField]
     private GameObject rightLeg;
     [SerializeField]
@@ -36,6 +38,7 @@ public class Player : MonoBehaviour
     private bool hasUnGrappled;   
     [SerializeField]
     Canvas grappledText;
+   
 
 
 
@@ -47,6 +50,7 @@ public class Player : MonoBehaviour
         ArmsBackForth = -1;
         hasUnGrappled = true;
         grappledText.enabled = false;
+        grappleLayer = 9;
     }
 
 
@@ -57,7 +61,7 @@ public class Player : MonoBehaviour
     {
 
 
-
+       
 
     
         //WASD and jumping movement
@@ -135,7 +139,7 @@ public class Player : MonoBehaviour
         //this initiates a grapple
             if (Input.GetMouseButtonDown(4))
             {                               
-                if (Physics.Raycast(body.transform.position, cam.transform.forward, out hit, 100) && hasUnGrappled)
+                if (Physics.Raycast(body.transform.position, cam.transform.forward, out hit, 100) && hasUnGrappled && hit.transform.gameObject.layer == grappleLayer)
                 {
                     
                     currentVelocity = body.velocity.magnitude;
@@ -157,7 +161,7 @@ public class Player : MonoBehaviour
      
                 if((hit.point - body.transform.position).magnitude > distanceFromRotationPoint)
                 {
-                    body.AddForce(1.3f *  body.velocity.magnitude  * (hit.point - body.position).normalized);
+                    body.AddForce(body.velocity.magnitude  * (hit.point - body.position).normalized);
                 }
 
          
@@ -197,6 +201,9 @@ public class Player : MonoBehaviour
     {
         if (collision.gameObject.layer == 8) {
             isGrounded = true;     
+
+            
+
         }
     }
 
@@ -209,5 +216,4 @@ public class Player : MonoBehaviour
 
         }
     }
-
 }
