@@ -10,8 +10,7 @@ public class PaletteSetter : MonoBehaviour {
 	// Use this for initialization
 	void Start () {
 		palette = new Dictionary<string, Color> ();
-		palette.Add ("floor", new Color (255, 0, 0));
-		palette.Add ("wall", new Color (0, 255, 0));
+		LoadPalette ("night");
 		ChangeTheWorld ();
 	}
 
@@ -29,7 +28,10 @@ public class PaletteSetter : MonoBehaviour {
 
 	public void LoadPalette (string key) {
 		if (key == "night") {
-
+			palette.Add ("floor", new Color (86, 86, 86));
+			palette.Add ("wall", new Color (141, 141, 141));
+			palette.Add ("witness", new Color (174, 00, 16));
+			palette.Add ("grappleable", new Color (255, 00, 23));
 		}
 	}
 
