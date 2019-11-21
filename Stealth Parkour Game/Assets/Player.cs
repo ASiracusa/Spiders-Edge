@@ -17,6 +17,8 @@ public class Player : MonoBehaviour
     private float currentVelocity;
     private RaycastHit hit;
     private Vector3 currentDirection;
+    private float deltaT;
+    private float oldTime;
 
 	public PaletteSetter worldmanager;
 
@@ -62,7 +64,9 @@ public class Player : MonoBehaviour
     {
 
 
-       
+        deltaT = Time.time - oldTime;
+        oldTime = Time.time;
+
 
     
         //WASD and jumping movement
@@ -145,9 +149,9 @@ public class Player : MonoBehaviour
                     
                     currentVelocity = body.velocity.magnitude;
                     currentDirection = body.velocity;
+                
                     distanceFromRotationPoint = (hit.point - body.transform.position).magnitude;
-                Debug.Log(distanceFromRotationPoint);
-                                 
+                Debug.Log(distanceFromRotationPoint);           
                     hasUnGrappled = false;                                       
                     grappledText.enabled = true;                    
                 }
@@ -159,13 +163,12 @@ public class Player : MonoBehaviour
             //this is what happens while we're grappled
             if (!hasUnGrappled)
             {
-     
                 if((hit.point - body.transform.position).magnitude > distanceFromRotationPoint)
                 {
-                    body.AddForce(body.velocity.magnitude  * (hit.point - body.position).normalized);
-                }
-
-         
+                Vector3 likelyNextPosition = (body.position + (body.velocity) * deltaT);
+                likelyNextPosition = hit.point - likelyNextPosition;
+                body.AddForce(likelyNextPosition * .8f);                  
+                }     
             }
 
 
