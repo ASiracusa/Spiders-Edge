@@ -20,6 +20,7 @@ public class Player : MonoBehaviour
     private float deltaT;
     private float oldTime;
 
+	public PaletteSetter worldmanager;
 
     //variables for swinging
     private float height;
@@ -204,10 +205,12 @@ public class Player : MonoBehaviour
     {
         if (collision.gameObject.layer == 8) {
             isGrounded = true;     
-
-            
-
         }
+
+		if (collision.gameObject.layer == 11) {
+			StartCoroutine (worldmanager.ChangeWorld ());
+		}
+
     }
 
     public void OnCollisionExit(Collision collision)
