@@ -19,8 +19,13 @@ public class Player : MonoBehaviour
     private Vector3 currentDirection;
     private float deltaT;
     private float oldTime;
-
-	public PaletteSetter worldmanager;
+    private float walkingSpeed;
+    private int currentLevelNumber;
+    private GameObject currentLevel;
+    private float timeSinceLastWin;
+    
+  
+	
 
     //variables for swinging
     private float height;
@@ -41,6 +46,10 @@ public class Player : MonoBehaviour
     private bool hasUnGrappled;   
     [SerializeField]
     Canvas grappledText;
+    [SerializeField]
+    GameObject[] levels;
+    [SerializeField]
+    Vector3[] startingPositions;
    
 
 
@@ -48,12 +57,18 @@ public class Player : MonoBehaviour
     // Start is called before the first frame update
     void Start()
     {
-        mouseSensitivity= 1;
         body = GetComponent<Rigidbody>();
+        StartCoroutine(KeepUsMoving());
+        currentLevelNumber = 0;
+        currentLevel = Instantiate(levels[currentLevelNumber]);
+        transform.position = startingPositions[currentLevelNumber];
+        mouseSensitivity= 1;
         ArmsBackForth = -1;
         hasUnGrappled = true;
         grappledText.enabled = false;
         grappleLayer = 9;
+        walkingSpeed = 1;
+        timeSinceLastWin = 0f;
     }
 
 
@@ -66,6 +81,7 @@ public class Player : MonoBehaviour
 
         deltaT = Time.time - oldTime;
         oldTime = Time.time;
+        timeSinceLastWin += deltaT;
 
 
     
@@ -80,9 +96,10 @@ public class Player : MonoBehaviour
 
             if (Input.GetKey("space") && jumpCounter >= 30)
             {
-                body.AddForce(new Vector3(0, 500, 0));
+                body.AddForce(new Vector3(0, 800, 0));
                 jumpCounter = 0;
             }
+        }
 
             if (Input.GetKey("w"))
             {
@@ -90,13 +107,7 @@ public class Player : MonoBehaviour
                 vecForceToAdd.y *= 0;
                 vecForceToAdd = vecForceToAdd.normalized;
 
-                if (Mathf.Sqrt(rightLeg.transform.rotation.x * rightLeg.transform.rotation.x + rightLeg.transform.rotation.z * rightLeg.transform.rotation.z) > .3)
-                    ArmsBackForth *= -1;
-
-                rightLeg.transform.Rotate(new Vector3(3 * ArmsBackForth, 0, 0));
-                leftLeg.transform.Rotate(new Vector3(-3 * ArmsBackForth, 0, 0));
-                rightArm.transform.Rotate(new Vector3(-3 * ArmsBackForth, 0, 0));
-                leftArm.transform.Rotate(new Vector3(3 * ArmsBackForth, 0, 0));
+               
             }
 
             if (Input.GetKey("d"))
@@ -123,19 +134,24 @@ public class Player : MonoBehaviour
                 temporaryVec = temporaryVec.normalized;
                 vecForceToAdd += temporaryVec;
             }
-            if (!(Input.GetKey("a") || Input.GetKey("w") || Input.GetKey("s") || Input.GetKey("d")))
+            if ((Input.GetKey("a") || Input.GetKey("w") || Input.GetKey("s") || Input.GetKey("d")))
             {
-                body.velocity.Set(body.velocity.x / 200, body.velocity.y, body.velocity.z / 200);
-            }
-            else
-            {
+
+            //arm/leg swinging
+                if (Mathf.Sqrt(rightLeg.transform.rotation.x * rightLeg.transform.rotation.x + rightLeg.transform.rotation.z * rightLeg.transform.rotation.z) > .3)
+                    ArmsBackForth *= -1;
+                rightLeg.transform.Rotate(new Vector3(3 * ArmsBackForth, 0, 0));
+                leftLeg.transform.Rotate(new Vector3(-3 * ArmsBackForth, 0, 0));
+                rightArm.transform.Rotate(new Vector3(-3 * ArmsBackForth, 0, 0));
+                leftArm.transform.Rotate(new Vector3(3 * ArmsBackForth, 0, 0));
+
                 if (body.velocity.magnitude < 30)
                 {
                     vecForceToAdd = vecForceToAdd.normalized;
-                    body.AddForce((vecForceToAdd * 20));
+                    body.AddForce((vecForceToAdd * 20 * walkingSpeed));
                 }
-            }            
-        }
+            }                   
+        
 
 
 
@@ -144,7 +160,7 @@ public class Player : MonoBehaviour
         //this initiates a grapple
             if (Input.GetMouseButtonDown(4))
             {                               
-                if (Physics.Raycast(body.transform.position, cam.transform.forward, out hit, 100) && hasUnGrappled && hit.transform.gameObject.layer == grappleLayer)
+                if (Physics.Raycast(body.transform.position, cam.transform.forward, out hit, 300) && hasUnGrappled && hit.transform.gameObject.layer == grappleLayer)
                 {
                     
                     currentVelocity = body.velocity.magnitude;
@@ -204,12 +220,29 @@ public class Player : MonoBehaviour
     public void OnCollisionEnter(Collision collision)
     {
         if (collision.gameObject.layer == 8) {
-            isGrounded = true;     
+            isGrounded = true;
+            walkingSpeed = 1;
         }
 
-		if (collision.gameObject.layer == 11) {
-			StartCoroutine (worldmanager.ChangeWorld ());
+		if (collision.gameObject.layer == 11 && timeSinceLastWin > .5f) {
+            timeSinceLastWin = 0;
+            //tartworldmanager.ChangeWorld();
+           //worldmanager.nextLevel();
+            Debug.Log("reached win");
+            Destroy(currentLevel);
+            currentLevel = Instantiate(levels[currentLevelNumber + 1]);
+            body.velocity.Set(0, 0, 0);
+            body.inertiaTensorRotation.Set(0, 0, 0, 0);
+            transform.position = (startingPositions[currentLevelNumber + 1]);
+            currentLevelNumber++;
+           
+
 		}
+        if (collision.gameObject.layer == 10)
+        {
+            body.velocity.Set(0, 0, 0);
+            transform.position = (startingPositions[currentLevelNumber]);
+        }
 
     }
 
@@ -219,7 +252,33 @@ public class Player : MonoBehaviour
         {
 
             isGrounded = false;
+            walkingSpeed = .2f;
 
         }
+
+
+
+
     }
+
+    IEnumerator KeepUsMoving()
+    {
+
+        
+        while (true)
+        {
+
+            Debug.Log("Coroutine is running");
+            
+                if (((Input.GetKey("a") || Input.GetKey("w") || Input.GetKey("s") || Input.GetKey("d"))) && body.velocity.magnitude < .05)
+                {
+                    transform.Translate(0, 1, 0);
+                }
+            
+
+            yield return new WaitForSeconds(3f);
+        }
+    }
+
+
 }
